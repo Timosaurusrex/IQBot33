@@ -9,27 +9,20 @@ import config
 from Telegram import send_message, check_for_message, check_for_message_date
 
 class Coin:
-    def __init__(self, symbol, sold, y, change, counter):
+    def __init__(self, symbol, sold, y, change):
         self.symbol = symbol
         self.sold = sold
         self.y = y
         self.change = change
-        self.counter = counter
 
 list = []
 list2 = []
-i = 0
-sar = 0
-ema_old = 0
-ema_old_fast = 0
-ema_old_slow = 0
-ema_old_macd = 0
+n = 0
 buy_price = 0
 sell_price = 0
 last_message = ""
 buy_symbol = "Coin"
-run = True
-sar_bool = False
+run = False
 position = False
 macd_change = False
 
@@ -39,7 +32,7 @@ client = Client(config.API_KEY, config.API_SECRET)
 with open("coin_list.txt") as f:
     for coin in f:
         coin = coin.strip()
-        coinasobject = Coin(coin, True, 0, 0, 1)
+        coinasobject = Coin(coin, True, 0, 0)
         list.append(coinasobject)
         list2.append(coin)
 print(list2)
@@ -58,7 +51,7 @@ def on_message(ws, msg):
             ema_old = 0
             lowest = 0
             highest = 0
-            counter = Symbol.counter
+            counter = 1
             sar = 0
             sar_bool = False
             print(Symbol.symbol.upper())
@@ -290,9 +283,13 @@ def on_close(ws):
 def on_error(ws, error):
     global n
     print(error)
+    n += 1
+    if n % 30 == 0:
+        send_message(error)
+        n = 0
 
 SOCKET = "wss://stream.binance.com:9443/ws/btcbusd@kline_1m"
-#send_message("Do you want to start, press /start ?")
+send_message("Do you want to start, press /start ?")
 ws = websocket.WebSocketApp(SOCKET, on_open=on_open, on_close=on_close, on_message=on_message, on_error=on_error)
 ws.run_forever()
 
