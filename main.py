@@ -165,7 +165,6 @@ def on_message(ws, msg):
                         f.close()
                         position = False
                     Symbol.sold = True
-
     telegram()
 
 def telegram():
@@ -175,6 +174,7 @@ def telegram():
     date = check_for_message_date()
 
     if date != last_date:
+        print(message)
         if message == "/end":
             send_message("Beendet")
             last_message = ""
@@ -225,51 +225,39 @@ def telegram():
             last_message = ""
             send_message("!Finished!")
 
-        """
-        elif message == "sell everything" or message == "/sell_everything":
-            send_message(f"Are you sure to sell?    /end")
+        elif message == "restart money" or message == "/restart_money":
+            send_message(f"How much money do you want?    /end")
             last_message = message
-            print("sell everything")
-        elif last_message == "/sell_everything" or last_message == "sell everything" and message != "/end":
-            f = open(f"{symbol.upper()}.txt", "r+")
-            sell(symbol.upper(), float(f.read()))
-            f.truncate()
+            print("restart money")
+        elif last_message == "restart money" or last_message == "/restart_money" and message != "/end":
+            f = open("COIN.txt", "w")
             f.write("0")
             f.close()
-            last_message = ""
-            send_message("All sold!")
-        """
+            f = open("USDT.txt", "w")
+            f.write(message)
+            f.close()
+            send_message("!Finished!")
 
-    elif message == "restart money" or message == "/restart_money":
-        send_message(f"How much money do you want?    /end")
-        last_message = message
-        print("restart money")
-    elif last_message == "restart money" or last_message == "/restart_money" and message != "/end":
-        f = open("Coin.txt", "w")
-        f.write("0")
-        f.close()
-        f = open("USDT.txt", "w")
-        f.write(message)
-        f.close()
-        send_message("!Finished!")
-
-    elif message == "/wallet" or message == "wallet":
-        f = open("USDT.txt", "r")
-        geld = float(f.read())
-        f.close()
-        f = open("Coin.txt", "r")
-        munze = float(f.read())
-        f.close()
-        munzeprice = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + buy_symbol.upper())
-        munzeprice = json.loads(munzeprice.text)
-        munzeprice = float(munzeprice["price"])
-        sum = (geld + (munze * float(munzeprice)))
-        send_message(f"USD: {str(geld)}\n{buy_symbol.upper()}: {str(munze)}\nCurrent Value: {str(sum)}")
-    elif message == "/history" or message == "history":
-        f = open("OrderHistory.txt", "r")
-        send_message(f.read())
-        f.close()
-    last_date = date
+        elif message == "/wallet" or message == "wallet":
+            f = open("USDT.txt", "r")
+            geld = float(f.read())
+            f.close()
+            f = open("COIN.txt", "r")
+            munze = float(f.read())
+            f.close()
+            if buy_symbol == "Coin":
+                sum = 0
+            else:
+                munzeprice = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + buy_symbol.upper())
+                munzeprice = json.loads(munzeprice.text)
+                munzeprice = float(munzeprice["price"])
+                sum = (geld + (munze * float(munzeprice)))
+            send_message(f"USD: {str(geld)}\n{buy_symbol.upper()}: {str(munze)}\nCurrent Value: {str(sum)}")
+        elif message == "/history" or message == "history":
+            f = open("OrderHistory.txt", "r")
+            send_message(f.read())
+            f.close()
+        last_date = date
 
 def on_open(ws):
     print('opened connection')
