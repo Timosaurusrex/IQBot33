@@ -7,6 +7,7 @@ import json
 import requests
 import config
 from Telegram import send_message, check_for_message, check_for_message_date
+import time
 
 class Coin:
     def __init__(self, symbol, sold, y, change):
@@ -55,8 +56,9 @@ def on_message(ws, msg):
             sar = 0
             sar_bool = False
             print(Symbol.symbol.upper())
+            time.sleep(2)
 
-            for kline in client.get_historical_klines_generator(Symbol.symbol.upper(), Client.KLINE_INTERVAL_30MINUTE, "10 day ago UTC"):
+            for kline in client.get_historical_klines_generator(Symbol.symbol.upper(), Client.KLINE_INTERVAL_30MINUTE, "20 day ago UTC"):
 
                 i += 1
                 price = float(kline[4])
@@ -107,7 +109,7 @@ def on_message(ws, msg):
                 ema_old_macd = ema_macd
                 macd = macd_line - ema_macd
 
-                if i >= 480:
+                if i >= 960:
                     """
                     print(kline)
                     print(f"EMA200: {ema}")
@@ -127,16 +129,19 @@ def on_message(ws, msg):
                         if Symbol.change == 0:  # Damit er zu beginn erst beim aufstieg wieder kauft
                             if macd > 0:
                                 position = True
+
                             if macd < 0:
                                 if position:
                                     position = False
                                     Symbol.change = 1
+
                         else:
                             if macd > 0 and macd_change == True:
+
                                 if position:
                                     print("Er scoutet!")
 
-                                elif position == False and sar_bool:
+                                elif position == False and sar_bool and Symbol.sold == False:
                                     print("buy")
 
                                     quantity = Quantity(symbol=Symbol.symbol.upper())
@@ -146,7 +151,7 @@ def on_message(ws, msg):
                                     # client.order_market_buy(symbol = symbol.upper(), quantity = float(quantity))
                                     # client.order_limit_sell(symbol=Symbol.symbol.upper(), quantity=float(quantity), price=buy_price)
                                     # client.order_limit_stop(symbol=Symbol.symbol.upper(), quantity=float(quantity), price=sell_price)
-                                    send_message("buy")
+                                    # send_message("buy")
                                     buy(Symbol.symbol.upper(), float(quantity))
                                     buy_symbol = Symbol.symbol
                                     f = open("OrderHistory.txt", "a")
@@ -158,13 +163,13 @@ def on_message(ws, msg):
                 if buy_price < price or sell_price > price:
                     if position and buy_symbol == Symbol.symbol:
                         print("sell")
-                        send_message("sell")
+                        #send_message("sell")
                         sell(Symbol.symbol.upper(), float(quantity))
                         f = open("OrderHistory.txt", "a")
                         f.write(f"SELL - {buy_symbol} {str(price)}\n")
                         f.close()
                         position = False
-                    Symbol.sold = True
+                        Symbol.sold = True
     telegram()
 
 def telegram():
