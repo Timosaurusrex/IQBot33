@@ -56,7 +56,7 @@ def on_message(ws, msg):
             sar = 0
             sar_bool = False
             print(Symbol.symbol.upper())
-            time.sleep(2)
+            time.sleep(1)
 
             for kline in client.get_historical_klines_generator(Symbol.symbol.upper(), Client.KLINE_INTERVAL_30MINUTE, "20 day ago UTC"):
 
@@ -116,6 +116,7 @@ def on_message(ws, msg):
                     print(f"MACD: {macd}")
                     print(f"SAR: ({sar_bool}) {sar}")
                     """
+
                     if ema < price:
 
                         if macd > 0 and macd_change == False and ema < price_highest and Symbol.y <= 4 and Symbol.sold == False:
@@ -143,8 +144,7 @@ def on_message(ws, msg):
 
                                 elif position == False and sar_bool and Symbol.sold == False:
                                     print("buy")
-
-                                    quantity = Quantity(symbol=Symbol.symbol.upper())
+                                    quantity = float(Quantity(Symbol.symbol.upper()))
                                     buy_price = 2 * price - lowest
                                     sell_price = sar
                                     # client.cancel_order(symbol=Symbol.symbol.upper())
@@ -152,22 +152,22 @@ def on_message(ws, msg):
                                     # client.order_limit_sell(symbol=Symbol.symbol.upper(), quantity=float(quantity), price=buy_price)
                                     # client.order_limit_stop(symbol=Symbol.symbol.upper(), quantity=float(quantity), price=sell_price)
                                     # send_message("buy")
-                                    buy(Symbol.symbol.upper(), float(quantity))
+                                    buy(Symbol.symbol.upper(), quantity)
                                     buy_symbol = Symbol.symbol
+                                    position = True
                                     f = open("OrderHistory.txt", "a")
                                     f.write(f"BUY - {buy_symbol} {str(price)}\n")
                                     f.close()
-                                    position = True
-                        macd_change = False
+                    macd_change = False
 
                 if buy_price < price or sell_price > price:
                     if position and buy_symbol == Symbol.symbol:
                         print("sell")
                         #send_message("sell")
-                        sell(Symbol.symbol.upper(), float(quantity))
-                        f = open("OrderHistory.txt", "a")
-                        f.write(f"SELL - {buy_symbol} {str(price)}\n")
-                        f.close()
+                        with open("Coin.txt", 'r+') as f:
+                            sell(Symbol.symbol.upper(), float(f.read()))
+                        with open("OrderHistory.txt", 'a') as f:
+                            f.write(f"SELL - {buy_symbol} - {str(price)}\n")
                         position = False
                         Symbol.sold = True
     telegram()
@@ -210,15 +210,15 @@ def telegram():
 
         elif message == "change coin" or message == "/change_coin":
             f = open("coin_list.txt", "r")
-            send_message(f"Coin: {f.read()}\nWelchen Coins wollen sie?    /end")
+            send_message(f"Coin:\n{f.read()}\nWelchen Coins wollen sie?    /end")
             f.close()
             last_message = message
             print("change coin")
         elif last_message == "/change_coin" or last_message == "change coin" and message != "/end":
             with open("coin_list.txt", 'r+') as f:
-                f.truncate(message)
+                f.write(message)
             with open("Coin", 'r+') as f:
-                sell(buy_symbol, quantity)
+                sell(buy_symbol, float(f.read()))
                 f.truncate(0)
             last_message = ""
             send_message("Coin changed!")
