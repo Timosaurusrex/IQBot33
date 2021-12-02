@@ -2,6 +2,7 @@ print("writen by Handschuh Christoph and Timo Perzi <3")
 
 import requests
 import ces
+from binance.client import Client
 
 symbol = ""
 bricks = ""
@@ -12,6 +13,8 @@ trades = []
 trades_price = []
 trades_price2 = []
 banned_coins = []
+
+client = Client(api_key="", api_secret="")
 
 def ema_func():
     global bricks
@@ -89,12 +92,15 @@ def sar_func():
 
     return sar_bool
 
+x = 0
 with open("coin_list.txt") as f:
     for line in f:
         symbol = line.strip()
         bricks = requests.get('https://api.binance.com/api/v1/klines?symbol=' + symbol.upper() + '&interval=30m').json()  # Todo: Timeframe Limit
         if macd_func() and ema_func() and sar_func():
             banned_coins.append(symbol)
+        print(x)
+        x += 1
 print(f"banned_coins: {banned_coins}")
 
 while run:
@@ -137,12 +143,13 @@ while run:
     i = len(trades) - 1
     while i >= 0:
         price = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + trades[i].upper()).json()
-        #price = float(price['price'])
+        price = float(price['price'])
         print(trades[i], price)
-        if price < trades_price[i] or price > trades_price2[i]:
+
+        if float(price) < float(trades_price[i]) or float(price) > float(trades_price2[i]):
             ces.sell_all(trades[i])
             f = open("history.txt", "a")
-            f.write("Sell - " + trades[i] + "  " + price + "\n")
+            f.write("Sell - " + trades[i] + "  " + str(price) + "\n")
             f.close()
             banned_coins.append(symbol)
             print(trades[i], "Sold")
@@ -161,3 +168,4 @@ while run:
                 f.close()
             x = requests.post("https://tradingbot.111mb.de//data_ins_christoph.php",data={'key': 'ae9w47', 'value': str(current_value)})
         i -= 1
+

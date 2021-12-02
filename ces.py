@@ -35,7 +35,7 @@ def buy(symbol, quantity):
             oldquantity = 0
         fee = ((quantity * symbolprice)/100) * fee
         #print(fee)
-        f = open(symbol.upper() + ".txt", "w")
+        f = open("coins/" +symbol.upper() + ".txt", "w")
         f.write(str(quantity + oldquantity))
         f.close()
         f = open("USDT.txt", "r")
