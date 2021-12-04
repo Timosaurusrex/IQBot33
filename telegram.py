@@ -1,9 +1,8 @@
 import requests
 import json
-import config
 
-key = config.API_KEY_TELEGRAM
-const_chat_id = config.chat_id
+key = "bot2132832222:AAFvYlCTi55lsTG_clJs1zwnlX_2kjjsat0"
+const_chat_id = "1057027063"
 
 def send_message(message, chat_id = const_chat_id):
     #x = requests.get('https://api.telegram.org/' + key + '/sendMessage?chat_id=' + str(chat_id) + '&text=' + str(message)) #Without buttons
