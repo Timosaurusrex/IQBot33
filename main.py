@@ -284,7 +284,6 @@ while True:
                 contains = True
                 reason = False
                 symbol = line.strip()
-                print(symbol)
                 bricks = requests.get('https://api.binance.com/api/v1/klines?symbol=' + symbol.upper() + '&interval=30m').json()  # Todo: Timeframe Limit
 
                 if len(trades) < mtg and macd_func() and ema_func() and sar_func():
