@@ -17,6 +17,7 @@ sar = 0
 save_trend = 0
 run = True
 trend = False
+mtg = 5
 
 trades = []
 trades_price = []
@@ -26,9 +27,10 @@ banned_coins = []
 client = Client(api_key="", api_secret="")
 
 def coin_buy():
-    global trend, trades, trades_price, trades_price2, banned_coins
+    global trend, trades, trades_price, trades_price2, banned_coins, bricks
+
     if len(trades) < mtg:
-        if trend == False:
+        if trend:
             with open("coin_list.txt") as f:
                 for line in f:
                     symbol = line.strip()
@@ -38,7 +40,7 @@ def coin_buy():
 
                     if len(trades) < mtg and ema_func() and sar_func() and macd_func():
                         for coin in banned_coins:
-                            if coin == symbol:
+                            if coin.upper() == symbol.upper():
                                 reason = True
 
                         if reason == False:
@@ -48,8 +50,8 @@ def coin_buy():
                                     contains = True
                     else:
                         for coin in banned_coins:
-                            if coin == symbol:
-                                banned_coins.remove(symbol)
+                            if coin.upper() == symbol.upper():
+                                banned_coins.remove(symbol.upper())
 
                     if contains == False:
                         trades.append(symbol)
@@ -252,7 +254,7 @@ def save_trades():
             f.write(str(trades_price[i]) + "\n")  #sell price +
             f.write(str(trades_price2[i]) + "\n")  # sell price -
             i -= 1
-
+"""
 def telegram():
     global last_message, last_date, run, mtg
     message = check_for_message()
@@ -351,21 +353,6 @@ def telegram():
             sys.exit(0)
         last_date = date
 
-def func1():
-  print('func1: starting')
-  for i in range(1000000):
-    print(i)
-    i += 1
-    pass
-  print('func1: finishing')
-
-def func2():
-  print('func2: starting')
-  for i in range(1000000):
-    print("a")
-    i += 1
-  print('func2: finishing')
-
 def on_message(ws, msg):
     global trend, trades, trades_price, trades_price2, banned_coins, start, trend
 
@@ -394,7 +381,7 @@ def on_message(ws, msg):
             current_value = float(f.read())
             f.close()
             save_trades()
-            """
+
             for j in trades:
                 symbolprice = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + j.upper()).json()
                 symbolprice = float(symbolprice["price"])
@@ -402,7 +389,6 @@ def on_message(ws, msg):
                 current_value = current_value + (float(f.read()) * float(symbolprice))
                 f.close()
             x = requests.post("https://tradingbot.111mb.de//data_ins_christoph.php", data={'key': 'ae9w47', 'value': str(current_value)})
-            """
         i -= 1
     ende = time.time()
     print('{:5.3f}s'.format(ende - start))
@@ -413,16 +399,15 @@ def on_open(ws):
 
 def on_close(ws):
     print('closed connection')
-    """
+
     with open("bought_coins.txt", "r") as f:
         send_message(f.read())
     ws = websocket.WebSocketApp("wss://stream.binance.com:9443/ws/btcbusd@kline_5m", on_open=on_open, on_close=on_close, on_message=on_message, on_error=on_error)
     ws.run_forever()
-    """
 
 def on_error(ws, error):
     print(error)
-
+"""
 if __name__ == '__main__':
 
     coins_checking()
@@ -456,7 +441,7 @@ if __name__ == '__main__':
     #send_message("© Written by Timo Perzi and Christoph Handschuh,\n on 30-11-2021")
     while True:
 
-        runInParallel(coins_distribution, coin_buy, telegram)
+        runInParallel(coins_distribution, coin_buy)
 
         print(f"Derzeitige Markt: {trend}")
 
@@ -493,7 +478,6 @@ if __name__ == '__main__':
             i -= 1
         ende = time.time()
         print('{:5.3f}s'.format(ende - start))
-        sys.exit()
 
 #send_message("Bot started! /start")
 #ws = websocket.WebSocketApp("wss://stream.binance.com:9443/ws/btcbusd@kline_5m", on_open=on_open, on_message=on_message, on_close=on_close, on_error=on_error)
