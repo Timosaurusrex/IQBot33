@@ -61,8 +61,13 @@ def coins_distribution():
     elif points < -800:
         points = -2
 
+    if points == 0 and save_trend <= -1:
+        lul = True
+    else:
+        lul = False
+
     with open("distribution.txt", "r+") as f:
-        if points == 2 or points == 1:#not (points == 1 and save_trend != 2) or :
+        if points == 2 or points == 1 or lul:
             f.write(str(1))
             print(f"Derzeitige Markt: up {points}")
         else:

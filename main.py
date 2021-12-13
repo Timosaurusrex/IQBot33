@@ -255,6 +255,9 @@ def coin_buy():
     elif len(trades) == 0 and trend == 0:
         time.sleep(20)
 
+def second_strategy():
+    print("LUL")
+
 if __name__ == '__main__':
 
     with open("coin_list.txt", "r+") as f:
@@ -285,6 +288,8 @@ if __name__ == '__main__':
 
     while True:
         start = time.time()
+
+        telegram()
 
         with open("distribution.txt", "r") as f:
             trend = float(f.readline())
