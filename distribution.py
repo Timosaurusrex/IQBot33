@@ -47,7 +47,7 @@ def coins_distribution():
             elif percent <= -10 and percent > -30:
                 points = points - 16
             elif percent <= -30:
-                points = points - 25
+                points = points - 20
 
     print(points)
     if points <= 100 and points >= -100:
@@ -74,7 +74,7 @@ def coins_distribution():
             f.write(str(0))
             print(f"Derzeitige Markt: down {points}")
 
-    if points != save_trend:
+    if points != save_trend and points != 0:
         save_trend = points
 
 if __name__ == '__main__':
