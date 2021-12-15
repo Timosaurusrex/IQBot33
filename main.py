@@ -21,17 +21,18 @@ trades = []
 trades_price = []
 trades_price2 = []
 banned_coins = []
+high_banned_coins = []
 
 client = Client(api_key="", api_secret="")
 
 def ema_func():
     global bricks
     ema = 0
-    for i in range(len(bricks) - 200, len(bricks)):
+    for i in range(len(bricks) - 399, len(bricks) - 200):
         ema = float(bricks[i][4]) + ema
     ema = ema / 200
 
-    for i in range(len(bricks) - 200, len(bricks)):
+    for i in range(len(bricks) - 199, len(bricks)):
         ema = (float(bricks[i][4]) * (2 / 201)) + (ema * (1 - (2 / 201)))
     if float(bricks[len(bricks) - 1][4]) > ema:
         return True
@@ -197,20 +198,23 @@ def coin_sell():
         price = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + trades[i].upper()).json()
         price = float(price['price'])
         print(trades[i], price)
-
+        print(1)
         if float(price) < float(trades_price[i]) or float(price) > float(trades_price2[i]):
             sell_all(trades[i])
+            print(2)
             with open("history.txt", "a") as f:
                 f.write("Sell - " + trades[i] + "  " + str(price) + "\n")
 
             banned_coins.append(symbol.upper())
+            print(1)
             print(trades[i], "Sold")
             trades.pop(i)
             trades_price.pop(i)
             trades_price2.pop(i)
+            print(3)
 
-            i -= 1
             save_trades()
+            i = len(trades)
         i -= 1
 
 def coin_buy():
@@ -255,8 +259,30 @@ def coin_buy():
     elif len(trades) == 0 and trend == 0:
         time.sleep(20)
 
-def second_strategy():
-    print("LUL")
+def second_strategy(symbol):
+    global bricks, high_banned_coins, mtg
+
+    if 12 >= ((float(bricks[499][4]) * 100) / float(bricks[451][4]) - 100) and mtg < len(trades):
+        high_banned_coins.pop(symbol.upper())
+
+    # am besten 5min oder sofort den derzeitigen Wert, das er beim höchsten Punkt verkauft, das es wieder gelöscht wird
+    if 17 <= ((float(bricks[499][4]) * 100) / float(bricks[451][4]) - 100) and mtg < len(trades):
+        i = len(high_banned_coins) - 1
+        while i >= 0:
+            if symbol.upper() == high_banned_coins[i]:
+                trades.append(symbol.upper())
+                print(trades)
+                price = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + trades[i].upper()).json()
+                price = float(price['price'])
+                trades_price.append(price * 0.98)
+                trades_price2.append(price * 1.03)
+                buy(symbol, Quantity(symbol, mtg))
+                f = open("history.txt", "a")
+                f.write("Buy - " + symbol + "  " + str(price) + " - " + str(price * 0.98) + " - " + str(price * 1.03) + "\n")
+                f.close()
+                print(symbol, "bought, Sellprice = ", str(price * 0.98), str(price * 1.03))
+                save_trades()
+                high_banned_coins.append(symbol.upper())
 
 if __name__ == '__main__':
 
@@ -280,6 +306,9 @@ if __name__ == '__main__':
 
             elif macd_func() and ema_func() and sar_func():
                 banned_coins.append(symbol.upper())
+
+            if 18 <= ((float(bricks[499][4]) * 100) / float(bricks[451][4]) - 100):
+                high_banned_coins.append(symbol.upper())
             x += 1
             print(x)
     print(f"banned_coins: {banned_coins}")
@@ -296,7 +325,6 @@ if __name__ == '__main__':
 
         if trend == 0:
             with open("coin_list.txt", "r+") as f:
-                x = 0
                 for line in f:
                     symbol = line.strip().lower()
 
@@ -305,6 +333,8 @@ if __name__ == '__main__':
 
                     if macd_func() and ema_func() and sar_func():
                         banned_coins.append(symbol.upper())
+
+                    second_strategy(symbol.upper())
         else:
             coin_buy()
         coin_sell()
