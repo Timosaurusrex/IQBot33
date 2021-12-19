@@ -179,6 +179,10 @@ def telegram():
             print("help")
             send_message("Start - /start\nStop - /stop\nMoney - /wallet\nHistory - /history\nSettings - /settings")
 
+        elif message == "/settings" or message == "settings":
+            with open("bought_coins.txt", "r") as f:
+                send_message(f.read())
+
         elif message == "/wallet" or message == "wallet":
             with open("USDT.txt", "r") as f:
                 geld = float(f.read())
