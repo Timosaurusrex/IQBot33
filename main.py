@@ -28,12 +28,13 @@ client = Client(api_key="", api_secret="")
 def ema_func():
     global bricks
     ema = 0
-    for i in range(len(bricks) - 399, len(bricks) - 200):
+    for i in range(len(bricks) - 399, len(bricks) - 199):
         ema = float(bricks[i][4]) + ema
     ema = ema / 200
 
     for i in range(len(bricks) - 199, len(bricks)):
         ema = (float(bricks[i][4]) * (2 / 201)) + (ema * (1 - (2 / 201)))
+    print(ema)
     if float(bricks[len(bricks) - 1][4]) > ema:
         return True
     else:
@@ -43,21 +44,21 @@ def macd_func():
     global bricks
     ema_fast = 0
     ema_slow = 0
-    for i in range(len(bricks) - 9, len(bricks)):
+    for i in range(len(bricks) - 23, len(bricks) - 11):
         ema_fast = float(bricks[i][4]) + ema_fast
-    ema_fast = ema_fast / 9
+    ema_fast = ema_fast / 12
 
-    for i in range(len(bricks) - 26, len(bricks)):
+    for i in range(len(bricks) - 51, len(bricks) - 25):
         ema_slow = float(bricks[i][4]) + ema_slow
     ema_slow = ema_slow / 26
 
-    for i in range(len(bricks) - 12, len(bricks)):
+    for i in range(len(bricks) - 11, len(bricks)):
         ema_fast = (float(bricks[i][4]) * (2 / 13)) + (ema_fast * (1 - (2 / 13)))
 
-    for i in range(len(bricks) - 26, len(bricks)):
+    for i in range(len(bricks) - 25, len(bricks)):
         ema_slow = (float(bricks[i][4]) * (2 / 27)) + (ema_slow * (1 - (2 / 27)))
 
-    if ema_fast > ema_slow:
+    if ema_fast - ema_fast/200 > ema_slow:
         return True
     else:
         return False
@@ -115,14 +116,39 @@ def remove_line(fileName, lineToSkip): #Removes a given line from a file
             currentLine += 1
 
 def telegram():
-    global last_message, last_date, mtg
+    global last_message, last_date, mtg, run
     message = check_for_message().lower()
     date = check_for_message_date()
 
     if date != last_date:
         print(message)
 
-        if message == "/wallet" or message == "wallet":
+        if message == "/end":
+            send_message("Beendet")
+            last_message = ""
+
+        elif message == "stop" or message == "/stop":
+            print("stop")
+            if run:
+                send_message("stopped")
+            else:
+                send_message("already stopped")
+            run = False
+            last_message = message
+        elif message == "start" or message == "/start":
+            if run:
+                send_message("already started")
+            else:
+                send_message("started")
+            print("start")
+            run = True
+            last_message = message
+
+        elif message == "help" or message == "/help":
+            print("help")
+            send_message("Start - /start\nStop - /stop\nMoney - /wallet\nHistory - /history\nSettings - /settings")
+
+        elif message == "/wallet" or message == "wallet":
             with open("USDT.txt", "r") as f:
                 geld = float(f.read())
             current_value = 0
@@ -356,18 +382,6 @@ if __name__ == '__main__':
         p1.join()
         p2.join()
         p3.join()
-
-def telegram():
-    global last_message, last_date, run, mtg
-    message = check_for_message()
-    message = message.lower()
-    date = check_for_message_date()
-
-    if date != last_date:
-        print(message)
-        if message == "/end":
-            send_message("Beendet")
-            last_message = ""
 
         elif message == "help" or message == "/help":
             print("help")
